@@ -1,0 +1,149 @@
+<!-- dashboard/templates/dashboard/admin_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - WePool{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4" id="stats-container">
+        <!-- Stats will be loaded via AJAX -->
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'view_all_users' %}" class="btn btn-primary btn-block w-100">
+                                <i class="fas fa-users"></i> View All Users
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'paying_queue' %}" class="btn btn-info btn-block w-100">
+                                <i class="fas fa-dollar-sign"></i> Paying Queue
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'sponsored_queue' %}" class="btn btn-warning btn-block w-100">
+                                <i class="fas fa-hand-holding-usd"></i> Sponsored Queue
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'assign_members' %}" class="btn btn-success btn-block w-100">
+                                <i class="fas fa-link"></i> Assign Members
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'yellow_members' %}" class="btn btn-warning btn-block w-100">
+                                <i class="fas fa-star"></i> Yellow Members
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'qualified_sponsored' %}" class="btn btn-success btn-block w-100">
+                                <i class="fas fa-check-circle"></i> Qualified Sponsored
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'export_data' %}" class="btn btn-secondary btn-block w-100">
+                                <i class="fas fa-download"></i> Export Data
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin:index' %}" class="btn btn-dark btn-block w-100">
+                                <i class="fas fa-cog"></i> Django Admin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Registrations</h5>
+                </div>
+                <div class="card-body" id="recent-registrations">
+                    <!-- Will be populated via AJAX -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Assignments</h5>
+                </div>
+                <div class="card-body" id="recent-assignments">
+                    <!-- Will be populated via AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load dashboard statistics
+function loadStats() {
+    fetch("{% url 'dashboard_stats' %}")
+        .then(response => response.json())
+        .then(data => {
+            const statsHTML = `
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Users</h5>
+                            <h2>${data.total_users}</h2>
+                            <p>Paying: ${data.paying_members} | Sponsored: ${data.sponsored_members}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Status Breakdown</h5>
+                            <p>Pending: ${data.status_breakdown.pending}</p>
+                            <p>Yellow: ${data.status_breakdown.yellow}</p>
+                            <p>Green: ${data.status_breakdown.green}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Assignments</h5>
+                            <h2>${data.assignments.completed}</h2>
+                            <p>Completed assignments</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Activity</h5>
+                            <h2>${data.recent_registrations}</h2>
+                            <p>New users (last 7 days)</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('stats-container').innerHTML = statsHTML;
+        });
+}
+
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %}

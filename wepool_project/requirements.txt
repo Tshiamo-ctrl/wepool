@@ -1,0 +1,8 @@
+asgiref==3.9.1
+crispy-bootstrap5==2025.6
+diff-match-patch==20241021
+Django==4.2.7
+django-crispy-forms==2.4
+django-import-export==4.3.9
+sqlparse==0.5.3
+tablib==3.8.0

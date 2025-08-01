@@ -1,0 +1,252 @@
+<!-- users/templates/users/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - WePool Tribe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Welcome to WePool Tribe, {{ user.first_name }}!</h2>  <!-- Updated welcome message -->
+
+    <!-- Status Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Member Type</h5>
+                    <p class="card-text">{{ profile.get_member_type_display_ui }}</p>  <!-- Use UI display method -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white {% if profile.status == 'green' %}bg-success{% elif profile.status == 'yellow' %}bg-warning{% else %}bg-secondary{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Status</h5>
+                    <p class="card-text">{{ profile.get_status_display }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Direct Referrals</h5>
+                    <p class="card-text">{{ direct_referrals.count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Email Status</h5>
+                    <p class="card-text">{% if profile.verified_email %}Verified{% else %}Not Verified{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button">Profile</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="matrix-tab" data-bs-toggle="tab" data-bs-target="#matrix" type="button">Family Tree</button>  <!-- Changed label -->
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="referrals-tab" data-bs-toggle="tab" data-bs-target="#referrals" type="button">Direct Referrals</button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="dashboardTabContent">
+        <!-- Profile Tab -->
+        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>Profile Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Phone:</strong> {{ profile.phone }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Date of Birth:</strong> {{ profile.date_of_birth|default:"Not set" }}</p>
+                            <p><strong>City/Suburb:</strong> {{ profile.city|default:"Not set" }}</p>  <!-- Removed address -->
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>State/Province:</strong> {{ profile.state|default:"Not set" }}</p>
+                            <p><strong>Country:</strong> {{ profile.country|default:"Not set" }}</p>
+                            <p><strong>Zip Code:</strong> {{ profile.zip_code|default:"Not set" }}</p>
+                            <p><strong>Communications:</strong> {% if profile.communications_opt_in %}Enabled{% else %}Disabled{% endif %}</p>
+                        </div>
+                    </div>
+
+                    {% if profile.status == 'pending' %}
+                    <div class="alert alert-warning mt-3">
+                        <h6>To qualify for Yellow status, you need to:</h6>
+                        <ul>
+                            <li>{% if profile.verified_email %}✓{% else %}✗{% endif %} Verify your email</li>
+                            <li>{% if profile.registered_tacconnector %}✓{% else %}✗{% endif %} Register on TAC Connector</li>  <!-- Updated text -->
+                            <li>{% if profile.tacconnector_link %}✓{% else %}✗{% endif %} Add your TAC Connector link</li>  <!-- Updated text -->
+                        </ul>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6>Update TAC Connector Status</h6>  <!-- Updated text -->
+                        <form id="tacconnector-form">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="registered_tacconnector"
+                                       {% if profile.registered_tacconnector %}checked{% endif %}>
+                                <label class="form-check-label" for="registered_tacconnector">
+                                    I have registered on TAC Connector  <!-- Updated text -->
+                                </label>
+                            </div>
+                            <div class="mb-3 mt-2">
+                                <label for="tacconnector_link" class="form-label">TAC Connector Link</label>  <!-- Updated text -->
+                                <input type="url" class="form-control" id="tacconnector_link"
+                                       value="{{ profile.tacconnector_link|default:'' }}"
+                                       placeholder="https://taconnector.africa/yourprofile">  <!-- Updated placeholder -->
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update TAC Connector Info</button>  <!-- Updated text -->
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'update_profile' %}" class="btn btn-primary mt-3">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Family Tree Tab (formerly Matrix Tab) -->
+        <div class="tab-pane fade" id="matrix" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>4x4 Family Tree</h5>  <!-- Updated title -->
+
+                    {% for level, members in matrix.items %}
+                    <div class="mt-4">
+                        <h6>{{ level|upper|slice:"6:" }} ({{ members|length }} members)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for member in members %}
+                                    <tr>
+                                        <td>{{ member.user.get_full_name }}</td>
+                                        <td>{{ member.phone }}</td>
+                                        <td>{{ member.get_member_type_display_ui }}</td>  <!-- Use UI display method -->
+                                        <td>
+                                            <span class="badge bg-{% if member.status == 'green' %}success{% elif member.status == 'yellow' %}warning{% else %}secondary{% endif %}">
+                                                {{ member.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No members at this level</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Direct Referrals Tab -->
+        <div class="tab-pane fade" id="referrals" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>Direct Referrals</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Member Type</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for referral in direct_referrals %}
+                                <tr>
+                                    <td>{{ referral.referred.user.get_full_name }}</td>
+                                    <td>{{ referral.referred.user.email }}</td>
+                                    <td>{{ referral.referred.phone }}</td>
+                                    <td>{{ referral.referred.get_member_type_display_ui }}</td>  <!-- Use UI display method -->
+                                    <td>
+                                        <span class="badge bg-{% if referral.referred.status == 'green' %}success{% elif referral.referred.status == 'yellow' %}warning{% else %}secondary{% endif %}">
+                                            {{ referral.referred.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ referral.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">You haven't referred anyone yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <p><strong>Your referral link:</strong></p>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="referral-link"
+                                   value="https://taconnector.africa/product/train-a-connector/?ref={{ profile.phone }}" readonly>  <!-- Updated referral link -->
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update TAC Connector status
+document.getElementById('tacconnector-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const registered = document.getElementById('registered_tacconnector').checked;
+    const link = document.getElementById('tacconnector_link').value;
+
+    fetch("{% url 'update_techconnect' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `registered=${registered}&tacconnector_link=${link}`  // Updated parameter names
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('TAC Connector information updated successfully!');
+            if (data.qualified_for_yellow) {
+                location.reload();
+            }
+        }
+    });
+});
+
+function copyReferralLink() {
+    const input = document.getElementById('referral-link');
+    input.select();
+    document.execCommand('copy');
+    alert('Referral link copied to clipboard!');
+}
+</script>
+{% endblock %}

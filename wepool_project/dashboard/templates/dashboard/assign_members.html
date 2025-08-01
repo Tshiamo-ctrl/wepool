@@ -1,0 +1,110 @@
+<!-- dashboard/templates/dashboard/assign_members.html -->
+{% extends 'base.html' %}
+
+{% block title %}Assign Members - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Assign Yellow to Sponsored Members</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5>Available Yellow Members</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="assignment-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="yellow_member" class="form-label">Select Yellow Member:</label>
+                            <select name="yellow_member" id="yellow_member" class="form-select" required>
+                                <option value="">Choose a yellow member...</option>
+                                {% for member in yellow_members %}
+                                <option value="{{ member.id }}">
+                                    {{ member.user.get_full_name }} ({{ member.phone }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5>Qualified Sponsored Members</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="sponsored_member" class="form-label">Select Sponsored Member:</label>
+                        <select name="sponsored_member" id="sponsored_member" class="form-select" form="assignment-form" required>
+                            <option value="">Choose a sponsored member...</option>
+                            {% for member in sponsored_members %}
+                            <option value="{{ member.id }}">
+                                {{ member.user.get_full_name }} ({{ member.phone }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" form="assignment-form" class="btn btn-primary">
+                        Create Assignment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Recent Assignments</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Yellow Member</th>
+                            <th>Sponsored Member</th>
+                            <th>Assignment Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td>
+                                {{ assignment.yellow_member.user.get_full_name }}
+                                <small class="text-muted">({{ assignment.yellow_member.phone }})</small>
+                            </td>
+                            <td>
+                                {{ assignment.sponsored_member.user.get_full_name }}
+                                <small class="text-muted">({{ assignment.sponsored_member.phone }})</small>
+                            </td>
+                            <td>{{ assignment.assigned_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if assignment.completed %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No assignments yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

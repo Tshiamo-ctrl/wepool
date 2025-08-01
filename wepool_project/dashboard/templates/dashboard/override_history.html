@@ -1,0 +1,103 @@
+<!-- dashboard/templates/dashboard/override_history.html -->
+{% extends 'base.html' %}
+
+{% block title %}Override History - WePool Tribe Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Override History</h2>
+        <a href="{% url 'view_all_users' %}" class="btn btn-secondary">Back to Users</a>
+    </div>
+
+    <!-- Qualification Overrides -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning">
+            <h5><i class="fas fa-user-shield"></i> Qualification Overrides</h5>
+        </div>
+        <div class="card-body">
+            {% if qualification_overrides %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Member Type</th>
+                            <th>Override Reason</th>
+                            <th>Overridden By</th>
+                            <th>Override Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in qualification_overrides %}
+                        <tr>
+                            <td>{{ profile.user.get_full_name }}</td>
+                            <td>{{ profile.user.email }}</td>
+                            <td>
+                                {% if profile.member_type == 'sponsored' %}PIF Member{% else %}Paying Member{% endif %}
+                            </td>
+                            <td>{{ profile.override_reason|truncatechars:50 }}</td>
+                            <td>{{ profile.overridden_by.get_full_name|default:"Unknown" }}</td>
+                            <td>{{ profile.override_date|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'edit_user' profile.id %}" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No qualification overrides found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Admin Promotion Overrides -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5><i class="fas fa-crown"></i> Admin Promotion Overrides</h5>
+        </div>
+        <div class="card-body">
+            {% if admin_overrides %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Override Reason</th>
+                            <th>Overridden By</th>
+                            <th>Override Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in admin_overrides %}
+                        <tr>
+                            <td>{{ profile.user.get_full_name }}</td>
+                            <td>{{ profile.user.email }}</td>
+                            <td>{{ profile.admin_override_reason|truncatechars:50 }}</td>
+                            <td>{{ profile.admin_overridden_by.get_full_name|default:"Unknown" }}</td>
+                            <td>{{ profile.admin_override_date|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'edit_user' profile.id %}" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No admin promotion overrides found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,706 @@
+<!-- dashboard/templates/dashboard/view_all_users.html -->
+{% extends 'base.html' %}
+
+{% block title %}All Users - WePool Tribe Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>All Users</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-filter"></i> Filter Users</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label for="{{ form.member_type.id_for_label }}" class="form-label">Member Type</label>
+                    <select name="member_type" class="form-select">
+                        <option value="">All</option>
+                        <option value="paying" {% if request.GET.member_type == 'paying' %}selected{% endif %}>Paying Members</option>
+                        <option value="sponsored" {% if request.GET.member_type == 'sponsored' %}selected{% endif %}>PIF Members</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="yellow" {% if request.GET.status == 'yellow' %}selected{% endif %}>Yellow</option>
+                        <option value="green" {% if request.GET.status == 'green' %}selected{% endif %}>Green</option>
+                        <option value="qualified" {% if request.GET.status == 'qualified' %}selected{% endif %}>Qualified</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="override_status" class="form-label">Override Status</label>
+                    <select name="override_status" class="form-select">
+                        <option value="">All</option>
+                        <option value="overridden" {% if request.GET.override_status == 'overridden' %}selected{% endif %}>Overridden Qualifications</option>
+                        <option value="normal" {% if request.GET.override_status == 'normal' %}selected{% endif %}>Normal Qualifications</option>
+                        <option value="admin_overridden" {% if request.GET.override_status == 'admin_overridden' %}selected{% endif %}>Admin Promotion Overridden</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.search.id_for_label }}" class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Search by name, email, username, or phone"
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-users"></i> Users ({{ profiles.count }} found)</h5>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="selectAll()">
+                    <i class="fas fa-check-square"></i> Select All
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearSelection()">
+                    <i class="fas fa-square"></i> Clear
+                </button>
+                <a href="{% url 'override_history' %}" class="btn btn-sm btn-outline-warning">
+                    <i class="fas fa-history"></i> Override History
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="select-all" class="form-check-input">
+                            </th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Email</th>
+                            <th>TAC Connector</th>
+                            <th>Active</th>
+                            <th>Referrer</th>
+                            <th>Overrides</th>
+                            <th>Joined</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in profiles %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="user-checkbox form-check-input" value="{{ profile.id }}">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-primary text-white me-2">
+                                        {{ profile.user.first_name|first|upper }}{{ profile.user.last_name|first|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ profile.user.get_full_name|default:"No Name" }}</strong>
+                                        {% if profile.user.is_staff %}
+                                            <span class="badge bg-danger ms-1">Staff</span>
+                                        {% endif %}
+                                        {% if profile.agreed_to_terms %}
+                                            <span class="badge bg-success ms-1" title="Agreed to Terms">T&C</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <code class="text-primary">{{ profile.user.username }}</code>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ profile.user.email }}" class="text-decoration-none">
+                                    {{ profile.user.email }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ profile.phone }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if profile.member_type == 'paying' %}primary{% else %}info{% endif %}">
+                                    {{ profile.get_member_type_display_ui }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if profile.status == 'green' %}success{% elif profile.status == 'yellow' %}warning{% elif profile.status == 'qualified' %}info{% else %}secondary{% endif %}">
+                                    {{ profile.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if profile.verified_email %}
+                                    <i class="fas fa-check-circle text-success" title="Email Verified"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger" title="Email Not Verified"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if profile.registered_tacconnector %}
+                                    {% if profile.tacconnector_link %}
+                                        <a href="{{ profile.tacconnector_link }}" target="_blank" class="text-success" title="Registered with Link">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    {% else %}
+                                        <i class="fas fa-check text-success" title="Registered (No Link)"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-times text-danger" title="Not Registered"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if profile.user.is_active %}
+                                    <i class="fas fa-user-check text-success" title="Active User"></i>
+                                {% else %}
+                                    <i class="fas fa-user-slash text-danger" title="Inactive User"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if profile.referrer_phone %}
+                                    <small class="text-muted">{{ profile.referrer_phone }}</small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if profile.qualification_overridden %}
+                                    <span class="badge bg-warning" title="Qualification Overridden">Q</span>
+                                {% endif %}
+                                {% if profile.admin_promotion_overridden %}
+                                    <span class="badge bg-danger" title="Admin Promotion Overridden">A</span>
+                                {% endif %}
+                                {% if not profile.qualification_overridden and not profile.admin_promotion_overridden %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ profile.created_at|date:"M d, Y" }}</small>
+                                <br>
+                                <small class="text-muted">{{ profile.created_at|timesince }} ago</small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'edit_user' profile.id %}"
+                                       class="btn btn-outline-primary"
+                                       title="Edit User">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'quick_override' profile.id %}"
+                                       class="btn btn-outline-warning"
+                                       title="Quick Override">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </a>
+                                    <a href="{% url 'delete_user' profile.id %}"
+                                       class="btn btn-outline-danger"
+                                       title="Delete User"
+                                       onclick="return confirm('Are you sure you want to delete {{ profile.user.get_full_name }}?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="14" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <h5>No users found</h5>
+                                    <p>Try adjusting your search criteria or filters.</p>
+                                    <a href="{% url 'view_all_users' %}" class="btn btn-outline-primary">Clear Filters</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Bulk Actions -->
+            {% if profiles %}
+            <div class="border-top p-3 bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <select id="bulk-status" class="form-select">
+                            <option value="">Change Status To...</option>
+                            <option value="pending">Pending</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="green">Green</option>
+                            <option value="qualified">Qualified</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button onclick="bulkUpdateStatus()" class="btn btn-warning w-100">
+                            <i class="fas fa-edit"></i> Update Status
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button onclick="bulkToggleActive()" class="btn btn-info w-100">
+                            <i class="fas fa-user-cog"></i> Toggle Active
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button onclick="bulkToggleCommunications()" class="btn btn-secondary w-100">
+                            <i class="fas fa-envelope"></i> Toggle Communications
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Select users using checkboxes, then choose an action above.
+                        <strong>Q</strong> = Qualification Override, <strong>A</strong> = Admin Promotion Override
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Card -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Quick Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <h4 class="text-primary">{{ profiles|length }}</h4>
+                            <small>Displayed</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4 class="text-success">
+                                {% widthratio profiles|dictsort:"member_type"|length 1 1 %}
+                            </h4>
+                            <small>Total Users</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4 class="text-info">
+                                {{ profiles|dictsort:"verified_email"|length }}
+                            </h4>
+                            <small>Verified Emails</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4 class="text-warning">
+                                {{ profiles|dictsort:"registered_tacconnector"|length }}
+                            </h4>
+                            <small>TAC Connector</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4 class="text-danger">
+                                {{ profiles|dictsort:"qualification_overridden"|length }}
+                            </h4>
+                            <small>Overrides</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4 class="text-secondary">
+                                <i class="fas fa-filter"></i>
+                            </h4>
+                            <small>
+                                <a href="{% url 'view_all_users' %}" class="text-decoration-none">
+                                    Clear Filters
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+code {
+    font-size: 0.8rem;
+    padding: 0.125rem 0.25rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.table-responsive {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.75rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .avatar-circle {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+
+    .table th, .table td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+</style>
+
+<script>
+// Select all checkboxes
+function selectAll() {
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    checkboxes.forEach(cb => cb.checked = true);
+    updateSelectAllState();
+}
+
+// Clear all selections
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    updateSelectAllState();
+}
+
+// Update select all checkbox state
+function updateSelectAllState() {
+    const allCheckboxes = document.querySelectorAll('.user-checkbox');
+    const checkedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('select-all');
+
+    if (checkedCheckboxes.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    } else if (checkedCheckboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+    } else {
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+// Select all toggle
+document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+// Update select all state when individual checkboxes change
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('user-checkbox')) {
+        updateSelectAllState();
+    }
+});
+
+// Bulk update status
+function bulkUpdateStatus() {
+    const selectedIds = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+    const newStatus = document.getElementById('bulk-status').value;
+
+    if (selectedIds.length === 0) {
+        alert('Please select at least one user');
+        return;
+    }
+
+    if (!newStatus) {
+        alert('Please select a new status');
+        return;
+    }
+
+    if (confirm(`Update ${selectedIds.length} users to ${newStatus} status?`)) {
+        const formData = new FormData();
+        selectedIds.forEach(id => formData.append('profile_ids[]', id));
+        formData.append('new_status', newStatus);
+
+        fetch("{% url 'bulk_update_status' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Successfully updated ${data.updated_count} users`);
+                location.reload();
+            } else {
+                alert('Error updating users: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Network error: ' + error);
+        });
+    }
+}
+
+// Bulk toggle active status
+function bulkToggleActive() {
+    const selectedIds = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+        alert('Please select at least one user');
+        return;
+    }
+
+    if (confirm(`Toggle active status for ${selectedIds.length} selected users?`)) {
+        const formData = new FormData();
+        selectedIds.forEach(id => formData.append('profile_ids[]', id));
+        formData.append('action', 'toggle_active');
+
+        fetch("{% url 'bulk_update_status' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Successfully updated ${data.updated_count} users`);
+                location.reload();
+            } else {
+                alert('Error updating users: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Network error: ' + error);
+        });
+    }
+}
+
+// Bulk toggle communications
+function bulkToggleCommunications() {
+    const selectedIds = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+        alert('Please select at least one user');
+        return;
+    }
+
+    if (confirm(`Toggle communication preferences for ${selectedIds.length} selected users?`)) {
+        const formData = new FormData();
+        selectedIds.forEach(id => formData.append('profile_ids[]', id));
+        formData.append('action', 'toggle_communications');
+
+        fetch("{% url 'bulk_update_status' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Successfully updated ${data.updated_count} users`);
+                location.reload();
+            } else {
+                alert('Error updating users: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Network error: ' + error);
+        });
+    }
+}
+
+// Search functionality with debounce
+let searchTimeout;
+const searchInput = document.querySelector('input[name="search"]');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            if (this.value.length >= 3 || this.value.length === 0) {
+                // Auto-submit form after 500ms delay if 3+ characters or empty
+                this.form.submit();
+            }
+        }, 500);
+    });
+}
+
+// Filter change auto-submit
+document.querySelectorAll('select[name="member_type"], select[name="status"], select[name="override_status"]').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+
+// Initialize select all state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectAllState();
+
+    // Add tooltips for override badges
+    document.querySelectorAll('[title]').forEach(element => {
+        element.setAttribute('data-bs-toggle', 'tooltip');
+    });
+
+    // Initialize Bootstrap tooltips if available
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+});
+
+// Export selected users
+function exportSelected() {
+    const selectedIds = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+        alert('Please select at least one user to export');
+        return;
+    }
+
+    // Create a form to submit the export request
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'export_data' %}";
+
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+
+    // Add export type
+    const exportTypeInput = document.createElement('input');
+    exportTypeInput.type = 'hidden';
+    exportTypeInput.name = 'export_type';
+    exportTypeInput.value = 'csv';
+    form.appendChild(exportTypeInput);
+
+    // Add selected IDs
+    selectedIds.forEach(id => {
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'selected_ids[]';
+        idInput.value = id;
+        form.appendChild(idInput);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+A to select all (when not in input)
+    if (e.ctrlKey && e.key === 'a' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        selectAll();
+    }
+
+    // Escape to clear selection
+    if (e.key === 'Escape') {
+        clearSelection();
+    }
+
+    // Ctrl+F to focus search
+    if (e.ctrlKey && e.key === 'f' && searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+    }
+});
+
+// Add loading state to buttons
+function addLoadingState(button, originalText) {
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    // Restore after 3 seconds as fallback
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }, 3000);
+}
+
+// Enhanced error handling
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    alert('An unexpected error occurred. Please refresh the page and try again.');
+});
+
+// Auto-refresh every 5 minutes to keep data current
+let autoRefreshInterval;
+function startAutoRefresh() {
+    autoRefreshInterval = setInterval(() => {
+        if (document.querySelectorAll('.user-checkbox:checked').length === 0) {
+            // Only auto-refresh if no users are selected
+            location.reload();
+        }
+    }, 300000); // 5 minutes
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+}
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', startAutoRefresh);
+
+// Stop auto-refresh when users are selected
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('user-checkbox')) {
+        const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+        if (checkedBoxes.length > 0) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+<!-- dashboard/templates/dashboard/quick_override.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Quick Override - WePool Tribe Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quick Override: {{ profile.user.get_full_name }}</h2>
+        <div>
+            <a href="{% url 'edit_user' profile.id %}" class="btn btn-secondary">Back to Edit User</a>
+            <a href="{% url 'view_all_users' %}" class="btn btn-outline-secondary">Back to Users</a>
+        </div>
+    </div>
+
+    <div class="alert alert-warning" role="alert">
+        <h5><i class="fas fa-exclamation-triangle"></i> Override Warning!</h5>
+        <p>You are about to override normal qualification rules for this user. This action will be logged and audited.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>User Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ profile.user.get_full_name }}</p>
+                    <p><strong>Email:</strong> {{ profile.user.email }}</p>
+                    <p><strong>Phone:</strong> {{ profile.phone }}</p>
+                    <p><strong>Member Type:</strong>
+                        {% if profile.member_type == 'sponsored' %}PIF Member{% else %}Paying Member{% endif %}
+                    </p>
+                    <p><strong>Current Status:</strong> {{ profile.get_status_display }}</p>
+                    <p><strong>Current Overrides:</strong></p>
+                    <ul>
+                        {% if profile.qualification_overridden %}
+                            <li><span class="badge bg-warning">Qualification Override Active</span></li>
+                        {% endif %}
+                        {% if profile.admin_promotion_overridden %}
+                            <li><span class="badge bg-danger">Admin Promotion Override Active</span></li>
+                        {% endif %}
+                        {% if not profile.qualification_overridden and not profile.admin_promotion_overridden %}
+                            <li>No active overrides</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5>Apply Override</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg w-100">
+                                <i class="fas fa-shield-alt"></i> Apply Override
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

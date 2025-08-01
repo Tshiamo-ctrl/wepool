@@ -1,0 +1,106 @@
+<!-- dashboard/templates/dashboard/delete_user.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Delete User - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-danger">Delete User: {{ user.get_full_name }}</h2>
+        <div>
+            <a href="{% url 'edit_user' profile.id %}" class="btn btn-secondary">Back to Edit</a>
+            <a href="{% url 'view_all_users' %}" class="btn btn-outline-secondary">Back to Users</a>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" role="alert">
+        <h5><i class="fas fa-exclamation-triangle"></i> Warning!</h5>
+        <p>You are about to permanently delete this user. This action cannot be undone and will:</p>
+        <ul>
+            <li>Remove the user account and all associated data</li>
+            <li>Delete all referral relationships</li>
+            <li>Remove any assignments</li>
+            <li>Break referral chains for users who were referred by this user</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5>User Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Name:</strong> {{ user.get_full_name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Phone:</strong> {{ profile.phone }}</p>
+                    <p><strong>Member Type:</strong> {{ profile.get_member_type_display }}</p>
+                    <p><strong>Status:</strong> {{ profile.get_status_display }}</p>
+                    <p><strong>Joined:</strong> {{ profile.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5>Confirm Deletion</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg w-100">
+                                <i class="fas fa-trash"></i> Permanently Delete User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Impact Analysis</h5>
+        </div>
+        <div class="card-body">
+            {% load core_tags %}
+            {% referral_stats profile as stats %}
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>Direct Referrals</h6>
+                    <p class="h4 text-info">{{ stats.total_referrals }}</p>
+                    <small>Users who will lose their referrer</small>
+                </div>
+                <div class="col-md-3">
+                    <h6>Paying Referrals</h6>
+                    <p class="h4 text-primary">{{ stats.paying_referrals }}</p>
+                    <small>Paying members referred</small>
+                </div>
+                <div class="col-md-3">
+                    <h6>Sponsored Referrals</h6>
+                    <p class="h4 text-secondary">{{ stats.sponsored_referrals }}</p>
+                    <small>Sponsored members referred</small>
+                </div>
+                <div class="col-md-3">
+                    <h6>Active Referrals</h6>
+                    <p class="h4 text-success">{{ stats.active_referrals }}</p>
+                    <small>Currently active referrals</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+</style>
+{% endblock %}

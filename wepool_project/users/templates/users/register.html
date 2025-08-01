@@ -1,0 +1,235 @@
+<!-- users/templates/users/register.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register - WePool Tribe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Join WePool Tribe</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="registration-form">
+                        {% csrf_token %}
+
+                        <h5>Account Information</h5>
+                        {{ user_form|crispy }}
+
+                        <hr>
+
+                        <h5>Profile Information</h5>
+                        {{ profile_form|crispy }}
+
+                        <hr>
+
+                        <!-- Terms and Conditions -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6>Terms and Conditions</h6>
+                            </div>
+                            <div class="card-body" style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6;">
+                                <div class="terms-content">
+                                    <h6><strong>WePool Tribe Terms and Conditions</strong></h6>
+                                    <p><strong>Effective Date: 1 August 2025</strong></p>
+                                    <p>Welcome to WePool Tribe. By registering and participating in the WePool program, you agree to abide by the following Terms and Conditions. Please read them carefully before proceeding.</p>
+
+                                    <h6><strong>1. Definitions</strong></h6>
+                                    <p><strong>WePool:</strong> A structured digital program that facilitates user participation through a matrix model.</p>
+                                    <p><strong>Member:</strong> Any individual who has registered, verified their email, and/or made a payment to participate in the WePool Tribe system.</p>
+                                    <p><strong>Sponsor:</strong> A registered user who refers a new member.</p>
+                                    <p><strong>PIF Sponsor:</strong> A system-assigned SPONSOR who pay it forward for other members.</p>
+                                    <p><strong>Queue Holding (Piffed Member):</strong> A verified user who has not yet been linked to a PIF sponsor.</p>
+                                    <p><strong>Admin:</strong> The authorized administrator of WePool Tribe who approves member placements and monitors compliance.</p>
+
+                                    <h6><strong>2. Eligibility and Registration</strong></h6>
+                                    <p>2.1. Participation is open to individuals aged 16 years or older with a valid National ID or Passport.</p>
+                                    <p>2.2. Registration requires completing the sign-up form, verifying your email address, and agreeing to these Terms and Conditions.</p>
+                                    <p>2.3. Only verified email users who are approved by Admin and have made the required contributions to the WePool Tribe strategy will be placed into the matrix and allocated members under them.</p>
+
+                                    <h6><strong>3. Payment and Contributions</strong></h6>
+                                    <p>3.1. Participation in the WePool Tribe is free but may require a contribution according to strategies aligned to our objective.</p>
+                                    <p>3.2. Payments must be made through the accepted payment methods listed on the platform.</p>
+                                    <p>3.3. All payments are final and non-refundable except where required by law.</p>
+
+                                    <h6><strong>4. Matrix Structure and Placement</strong></h6>
+                                    <p>4.1. WePool operates on a 4 x 4 matrix, filled top-to-bottom, left-to-right.</p>
+                                    <p>4.2. After verification and Admin approval:</p>
+                                    <p>Paying members are automatically placed in the matrix.</p>
+                                    <p>Piffed members (non-paying or awaiting sponsor linkage) are held in a queue until matched with a sponsor.</p>
+                                    <p>4.3. A member may have both a Direct Sponsor (the one who referred them) and a PIF Sponsor (assigned automatically by the system if necessary).</p>
+
+                                    <h6><strong>5. Qualification Criteria</strong></h6>
+                                    <p>5.1. First Qualification: All Members are required to contribute to the community by bringing a minimum of 4 paying members and pay forward a minimum of 1 non paying member.</p>
+
+                                    <h6><strong>6. Member Responsibilities</strong></h6>
+                                    <p>6.1. Members are responsible for maintaining the confidentiality of their login credentials.</p>
+                                    <p>6.2. Members shall not:</p>
+                                    <ul>
+                                        <li>Engage in fraudulent or unethical behavior.</li>
+                                        <li>Create multiple or fake accounts.</li>
+                                        <li>Misrepresent WePool Tribe or its purpose.</li>
+                                    </ul>
+                                    <p>6.3. All activities must comply with applicable local and international laws.</p>
+
+                                    <h6><strong>7. System Moderation</strong></h6>
+                                    <p>7.1. WePool Tribe reserves the right to:</p>
+                                    <ul>
+                                        <li>Suspend or terminate any account that violates these Terms.</li>
+                                        <li>Audit activity to prevent fraud or abuse.</li>
+                                        <li>Update the system structure and rules as needed for optimization.</li>
+                                    </ul>
+
+                                    <h6><strong>8. Disclaimer</strong></h6>
+                                    <p>8.1. WePool Tribe is not an investment, financial advisory, or get-rich-quick scheme. It is a structured contribution-based platform.</p>
+                                    <p>8.2. Earnings are not guaranteed and depend on member participation, community participation and system structure.</p>
+                                    <p>8.3. WePool, its admins, or affiliates will not be liable for any loss incurred through misuse of the platform.</p>
+
+                                    <h6><strong>9. Intellectual Property</strong></h6>
+                                    <p>9.1. All content, branding, and technology related to WePool Tribe are the property of its creators and may not be copied, distributed, or altered without permission.</p>
+
+                                    <h6><strong>10. Modifications</strong></h6>
+                                    <p>10.1. WePool Tribe reserves the right to modify these Terms and Conditions at any time.</p>
+                                    <p>10.2. Members will be notified of major updates via the platform or registered email.</p>
+
+                                    <h6><strong>11. Termination</strong></h6>
+                                    <p>11.1. A member may terminate their participation at any time by deactivating their account.</p>
+                                    <p>11.2. WePool may terminate or suspend a member's account for violations of these Terms or system abuse.</p>
+
+                                    <h6><strong>12. Governing Law</strong></h6>
+                                    <p>12.1. These Terms shall be governed by and interpreted in accordance with the laws of South Africa.</p>
+
+                                    <h6><strong>WePool Tribe Consent and Communication Approval</strong></h6>
+                                    <h6><strong>1. Communication Consent</strong></h6>
+                                    <p>1.1. You agree to receive communications from WePool Tribe via:</p>
+                                    <ul>
+                                        <li>Email</li>
+                                        <li>SMS</li>
+                                        <li>Push notifications (where applicable)</li>
+                                        <li>In-app messages (if applicable)</li>
+                                    </ul>
+                                    <p>1.2. These communications may include:</p>
+                                    <ul>
+                                        <li>Account and matrix updates</li>
+                                        <li>Contribution reminders</li>
+                                        <li>Qualification or upgrade notifications</li>
+                                        <li>Opportunities, events, and campaigns</li>
+                                        <li>Announcements related to your Direct Sponsor or PIF Sponsor</li>
+                                        <li>General platform news and community highlights</li>
+                                    </ul>
+
+                                    <h6><strong>2. Data Sharing Consent</strong></h6>
+                                    <p>2.1. You grant WePool permission to share your basic personal information—such as your name, email address, referral code, and sponsor relationship—with:</p>
+                                    <ul>
+                                        <li>Your Direct Sponsor (the person who referred you)</li>
+                                        <li>Your PIF Sponsor (assigned sponsor if applicable)</li>
+                                        <li>Relevant matrix-level stakeholders for placement and qualification purposes</li>
+                                        <li>System admins for operational support and troubleshooting</li>
+                                    </ul>
+                                    <p>2.2. Your information will not be sold to third parties or used for unrelated marketing purposes.</p>
+                                    <p>2.3. All data shared will be in accordance with applicable data protection laws, including South Africa's Protection of Personal Information Act (POPIA) and international standards like GDPR, where applicable.</p>
+
+                                    <h6><strong>3. Opt-Out Rights</strong></h6>
+                                    <p>3.1. You may unsubscribe from non-essential communications at any time using the "Unsubscribe" link provided in all emails.</p>
+                                    <p>3.2. To request data deletion or limit specific data sharing, you may email: support@wepooltribe.com</p>
+
+                                    <h6><strong>4. Data Protection & Security</strong></h6>
+                                    <p>4.1. WePool takes data protection seriously and implements appropriate technical and organizational safeguards to protect your information.</p>
+                                    <p>4.2. Access to your information is limited to only those stakeholders who require it for:</p>
+                                    <ul>
+                                        <li>System placement</li>
+                                        <li>Matrix tracking</li>
+                                        <li>Support</li>
+                                        <li>Sponsor relationship purposes</li>
+                                    </ul>
+
+                                    <h6><strong>5. Final Acknowledgment</strong></h6>
+                                    <p>By clicking "I Agree" during sign-up or continuing to use the platform, you confirm that you:</p>
+                                    <ul>
+                                        <li>Understand and accept the above terms</li>
+                                        <li>Provide informed consent for communication and strategic data sharing</li>
+                                        <li>Have read the full WePool Tribe Terms and Conditions</li>
+                                    </ul>
+
+                                    <p><strong>By clicking "I Agree" or participating in WePool Tribe, you confirm that you have read, understood, and agreed to these Terms and Conditions.</strong></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms Agreement and Communications Opt-in -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="agreed_to_terms" name="agreed_to_terms" required>
+                            <label class="form-check-label" for="agreed_to_terms">
+                                <strong>I agree to the WePool Tribe Terms and Conditions *</strong>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="communications_opt_in" name="communications_opt_in">
+                            <label class="form-check-label" for="communications_opt_in">
+                                I agree to receive communications from WePool Tribe (recommended)
+                            </label>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                            <a href="{% url 'login' %}" class="btn btn-link">Already have an account?</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Check if referrer exists
+document.getElementById('id_referrer_phone')?.addEventListener('blur', function() {
+    const phone = this.value;
+    if (phone && phone.match(/^\d+$/)) {  // Only check if it's all digits
+        fetch(`{% url 'check_referrer' %}?phone=${phone}`)
+            .then(response => response.json())
+            .then(data => {
+                const feedback = this.parentNode.querySelector('.feedback');
+                if (feedback) feedback.remove();
+
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'feedback';
+
+                if (data.exists) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    feedbackDiv.className += ' valid-feedback';
+                    feedbackDiv.textContent = `Referrer: ${data.name} (${data.member_type === 'sponsored' ? 'PIF Member' : 'Paying Member'})`;
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                    feedbackDiv.className += ' invalid-feedback';
+                    feedbackDiv.textContent = 'Referrer phone number not found';
+                }
+                this.parentNode.appendChild(feedbackDiv);
+            });
+    }
+});
+
+// Restrict phone inputs to numbers only
+document.querySelectorAll('input[type="tel"]').forEach(input => {
+    input.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+});
+
+// Form validation
+document.getElementById('registration-form').addEventListener('submit', function(e) {
+    const termsCheckbox = document.getElementById('agreed_to_terms');
+    if (!termsCheckbox.checked) {
+        e.preventDefault();
+        alert('You must agree to the Terms and Conditions to proceed.');
+        termsCheckbox.focus();
+    }
+});
+</script>
+{% endblock %}

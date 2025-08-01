@@ -1,0 +1,77 @@
+<!-- dashboard/templates/dashboard/export_data.html -->
+{% extends 'base.html' %}
+
+{% block title %}Export Data - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Export Data</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Export as CSV</h5>
+                </div>
+                <div class="card-body">
+                    <p>Export all user data in CSV format. This format is compatible with Excel, Google Sheets, and other spreadsheet applications.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="export_type" value="csv">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-csv"></i> Download CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Export as SQL</h5>
+                </div>
+                <div class="card-body">
+                    <p>Export all user data as SQL INSERT statements. This format can be used to import data into another database.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="export_type" value="sql">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-database"></i> Download SQL
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Export Information</h5>
+        </div>
+        <div class="card-body">
+            <h6>Exported fields include:</h6>
+            <ul>
+                <li>Username, Email, First Name, Last Name</li>
+                <li>Phone Number</li>
+                <li>Member Type (Paying/Sponsored)</li>
+                <li>Status (Pending/Yellow/Green/Qualified)</li>
+                <li>Referrer Phone Number</li>
+                <li>Email Verification Status</li>
+                <li>TechConnect Registration Status and Link</li>
+                <li>Registration Date</li>
+            </ul>
+
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i>
+                The export will include all users in the system. For filtered exports, use the "View All Users" page and apply filters before exporting.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

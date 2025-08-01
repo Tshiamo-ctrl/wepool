@@ -1,0 +1,66 @@
+<!-- dashboard/templates/dashboard/qualified_sponsored.html -->
+{% extends 'base.html' %}
+
+{% block title %}Qualified Sponsored - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Qualified Sponsored Members</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p>Sponsored members who have referred 4+ paying members and are qualified for green status:</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Paying Referrals</th>
+                            <th>Qualified Since</th>
+                            <th>Waiting for Assignment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in profiles %}
+                        <tr>
+                            <td>{{ profile.user.get_full_name }}</td>
+                            <td>{{ profile.user.email }}</td>
+                            <td>{{ profile.phone }}</td>
+                            <td>
+                                {% load core_tags %}
+                                {% get_referral_stats profile as stats %}
+                                <span class="badge bg-success">{{ stats.paying_referrals }}</span>
+                            </td>
+                            <td>{{ profile.updated_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if not profile.paid_for_self %}
+                                    <span class="badge bg-warning">Needs Yellow Assignment</span>
+                                {% else %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'edit_user' profile.id %}" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No qualified sponsored members waiting</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

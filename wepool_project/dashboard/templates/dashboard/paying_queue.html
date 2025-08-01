@@ -1,0 +1,85 @@
+<!-- dashboard/templates/dashboard/paying_queue.html -->
+{% extends 'base.html' %}
+
+{% block title %}Paying Queue - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Paying Members Queue</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p>Paying members with pending status who need to be processed:</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Email Verified</th>
+                            <th>TechConnect</th>
+                            <th>Referrer</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in profiles %}
+                        <tr>
+                            <td>{{ profile.user.get_full_name }}</td>
+                            <td>{{ profile.user.email }}</td>
+                            <td>{{ profile.phone }}</td>
+                            <td>
+                                {% if profile.verified_email %}
+                                    <i class="fas fa-check text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-times text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if profile.registered_techconnect %}
+                                    <i class="fas fa-check text-success"></i>
+                                    {% if profile.techconnect_link %}
+                                        <a href="{{ profile.techconnect_link }}" target="_blank">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-times text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td>{{ profile.referrer_phone|default:"-" }}</td>
+                            <td>{{ profile.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'edit_user' profile.id %}" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
+                                {% if profile.verified_email and profile.registered_techconnect and profile.techconnect_link %}
+                                <form method="post" action="{% url 'process_yellow_queue' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_id" value="{{ profile.id }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        Approve Yellow
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No pending paying members</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,244 @@
+<!-- dashboard/templates/dashboard/edit_user.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit User - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Edit User: {{ user.get_full_name }}</h2>
+        <div>
+            <a href="{% url 'delete_user' profile.id %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete User
+            </a>
+            <a href="{% url 'view_all_users' %}" class="btn btn-secondary">Back to Users</a>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            <!-- User Account Information -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5><i class="fas fa-user"></i> Account Information</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ user_form|crispy }}
+
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Current Phone:</strong> {{ profile.phone }} (cannot be changed)<br>
+                                <strong>User ID:</strong> {{ user.id }}<br>
+                                <strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Information -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-id-card"></i> Profile Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ profile_form.referrer_phone|as_crispy_field }}
+                                {{ profile_form.member_type|as_crispy_field }}
+                                {{ profile_form.status|as_crispy_field }}
+                                {{ profile_form.date_of_birth|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ profile_form.verified_email|as_crispy_field }}
+                                {{ profile_form.registered_techconnect|as_crispy_field }}
+                                {{ profile_form.techconnect_link|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Address Information -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="fas fa-home"></i> Address Information</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ profile_form.address|as_crispy_field }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ profile_form.city|as_crispy_field }}
+                                {{ profile_form.state|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ profile_form.country|as_crispy_field }}
+                                {{ profile_form.zip_code|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment & Status -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5><i class="fas fa-credit-card"></i> Payment & Status</h5>
+                    </div>
+                    <!-- dashboard/templates/dashboard/edit_user.html - Update field labels -->
+<!-- In the profile form section, update labels for TAC Connector fields -->
+                        <div class="col-md-6">
+                            {{ profile_form.verified_email|as_crispy_field }}
+                            {{ profile_form.registered_tacconnector|as_crispy_field }}  <!-- Updated field name -->
+                            {{ profile_form.tacconnector_link|as_crispy_field }}  <!-- Updated field name -->
+                            {{ profile_form.communications_opt_in|as_crispy_field }}  <!-- New field -->
+                        </div>
+
+<!-- Update help text -->
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Current Phone:</strong> {{ profile.phone }} (cannot be changed)<br>
+                                <strong>Member Type:</strong> {{ profile.get_member_type_display_ui }}<br>  <!-- Use UI display -->
+                                <strong>User ID:</strong> {{ user.id }}<br>
+                                <strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y H:i" }}<br>
+                                <strong>Terms Agreed:</strong> {% if profile.agreed_to_terms %}Yes ({{ profile.terms_agreed_date|date:"M d, Y" }}){% else %}No{% endif %}<br>
+                                <strong>Communications:</strong> {% if profile.communications_opt_in %}Enabled{% else %}Disabled{% endif %}
+                             </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+                        <a href="{% url 'view_all_users' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Referral Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Referral Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ stats.total_referrals }}</h4>
+                            <small>Total Referrals</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ stats.paying_referrals }}</h4>
+                            <small>Paying Referrals</small>
+                        </div>
+                    </div>
+                    <div class="row text-center mt-2">
+                        <div class="col-6">
+                            <h4 class="text-info">{{ stats.sponsored_referrals }}</h4>
+                            <small>Sponsored Referrals</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ stats.active_referrals }}</h4>
+                            <small>Active Referrals</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Referral Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if referrer %}
+                        <p><strong>Referred by:</strong>
+                            <a href="{% url 'edit_user' referrer.id %}">
+                                {{ referrer.user.get_full_name }} ({{ referrer.phone }})
+                            </a>
+                        </p>
+                    {% else %}
+                        <p><strong>Referred by:</strong>
+                            {% if profile.referrer_phone %}
+                                Unknown user ({{ profile.referrer_phone }})
+                            {% else %}
+                                No referrer
+                            {% endif %}
+                        </p>
+                    {% endif %}
+
+                    <p><strong>Direct Referrals:</strong> {{ referrals_made.count }}</p>
+
+                    {% if referrals_made %}
+                        <details>
+                            <summary>View Direct Referrals</summary>
+                            <ul class="mt-2">
+                                {% for referral in referrals_made %}
+                                    <li>
+                                        <a href="{% url 'edit_user' referral.referred.id %}">
+                                            {{ referral.referred.user.get_full_name }}
+                                        </a>
+                                        ({{ referral.referred.get_member_type_display }})
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    font-weight: 600;
+}
+
+.alert-info {
+    background-color: #e7f3ff;
+    border-color: #b8daff;
+    color: #004085;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    font-size: 1.125rem;
+}
+
+details summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: #0d6efd;
+}
+
+details summary:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}

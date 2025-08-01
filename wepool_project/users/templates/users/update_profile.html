@@ -1,0 +1,306 @@
+<!-- users/templates/users/update_profile.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Update Profile - WePool Tribe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Update Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Your phone number cannot be changed as it's linked to your referral system and used for identification.
+                    </div>
+
+                    <form method="post" id="profile-update-form">
+                        {% csrf_token %}
+
+                        <!-- Personal Information Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5><i class="fas fa-user"></i> Personal Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                            <input type="tel"
+                                                   name="{{ form.phone.name }}"
+                                                   value="{{ form.phone.value|default:'' }}"
+                                                   class="form-control"
+                                                   id="{{ form.phone.id_for_label }}"
+                                                   readonly
+                                                   title="Phone number cannot be changed">
+                                            <small class="form-text text-muted">Phone number is linked to your account and cannot be modified.</small>
+                                        </div>
+
+                                        {{ form.date_of_birth|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.city|as_crispy_field }}
+                                        {{ form.state|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.country|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.zip_code|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Communication Preferences Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5><i class="fas fa-envelope"></i> Communication Preferences</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="{{ form.communications_opt_in.name }}"
+                                           id="{{ form.communications_opt_in.id_for_label }}"
+                                           {% if form.communications_opt_in.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="{{ form.communications_opt_in.id_for_label }}">
+                                        {{ form.communications_opt_in.label }}
+                                    </label>
+                                    <small class="form-text text-muted d-block mt-1">
+                                        Receive updates about your account, referrals, and WePool Tribe announcements via email and SMS.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Status Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5><i class="fas fa-info-circle"></i> Account Status</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Member Type:</strong>
+                                            <span class="badge bg-{% if user.profile.member_type == 'paying' %}primary{% else %}info{% endif %}">
+                                                {{ user.profile.get_member_type_display_ui }}
+                                            </span>
+                                        </p>
+                                        <p><strong>Current Status:</strong>
+                                            <span class="badge bg-{% if user.profile.status == 'green' %}success{% elif user.profile.status == 'yellow' %}warning{% else %}secondary{% endif %}">
+                                                {{ user.profile.get_status_display }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Email Verified:</strong>
+                                            {% if user.profile.verified_email %}
+                                                <i class="fas fa-check-circle text-success"></i> Yes
+                                            {% else %}
+                                                <i class="fas fa-times-circle text-danger"></i> No
+                                            {% endif %}
+                                        </p>
+                                        <p><strong>TAC Connector:</strong>
+                                            {% if user.profile.registered_tacconnector %}
+                                                <i class="fas fa-check-circle text-success"></i> Registered
+                                            {% else %}
+                                                <i class="fas fa-times-circle text-danger"></i> Not Registered
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {% if user.profile.status == 'pending' %}
+                                <div class="alert alert-warning mt-3">
+                                    <h6><i class="fas fa-exclamation-triangle"></i> To qualify for Yellow status, you need to:</h6>
+                                    <ul class="mb-0">
+                                        <li>{% if user.profile.verified_email %}✓{% else %}✗{% endif %} Verify your email address</li>
+                                        <li>{% if user.profile.registered_tacconnector %}✓{% else %}✗{% endif %} Register on TAC Connector</li>
+                                        <li>{% if user.profile.tacconnector_link %}✓{% else %}✗{% endif %} Add your TAC Connector profile link</li>
+                                    </ul>
+                                </div>
+
+                                <div class="mt-3">
+                                    <h6>Update TAC Connector Status</h6>
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <form id="tacconnector-form">
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           id="registered_tacconnector"
+                                                           {% if user.profile.registered_tacconnector %}checked{% endif %}>
+                                                    <label class="form-check-label" for="registered_tacconnector">
+                                                        I have registered on TAC Connector
+                                                    </label>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="tacconnector_link" class="form-label">TAC Connector Profile Link</label>
+                                                    <input type="url"
+                                                           class="form-control"
+                                                           id="tacconnector_link"
+                                                           value="{{ user.profile.tacconnector_link|default:'' }}"
+                                                           placeholder="https://taconnector.africa/yourprofile">
+                                                    <small class="form-text text-muted">Enter your complete TAC Connector profile URL</small>
+                                                </div>
+                                                <button type="submit" class="btn btn-info">
+                                                    <i class="fas fa-sync-alt"></i> Update TAC Connector Info
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'user_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.form-control:read-only {
+    background-color: #e9ecef;
+    opacity: 1;
+}
+
+.badge {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.alert ul li {
+    margin-bottom: 0.25rem;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+
+<script>
+// Restrict any phone inputs to numbers only (though main phone is readonly)
+document.querySelectorAll('input[type="tel"]').forEach(input => {
+    if (!input.readOnly) {
+        input.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+});
+
+// Update TAC Connector status
+document.getElementById('tacconnector-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const registered = document.getElementById('registered_tacconnector').checked;
+    const link = document.getElementById('tacconnector_link').value;
+
+    // Basic validation
+    if (registered && !link) {
+        alert('Please provide your TAC Connector profile link if you have registered.');
+        document.getElementById('tacconnector_link').focus();
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    submitBtn.disabled = true;
+
+    fetch("{% url 'update_techconnect' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `registered=${registered}&tacconnector_link=${encodeURIComponent(link)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle"></i> TAC Connector information updated successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.getElementById('tacconnector-form').appendChild(alertDiv);
+
+            // If qualified for yellow, show notification and reload after delay
+            if (data.qualified_for_yellow) {
+                setTimeout(() => {
+                    alert('Congratulations! You now qualify for Yellow status.');
+                    location.reload();
+                }, 1500);
+            }
+        } else {
+            alert('Error updating TAC Connector information. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error. Please check your connection and try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Form validation before submit
+document.getElementById('profile-update-form').addEventListener('submit', function(e) {
+    const requiredFields = this.querySelectorAll('input[required], select[required]');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+
+    if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+    }
+});
+
+// Remove validation classes on input
+document.querySelectorAll('input, select').forEach(field => {
+    field.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+});
+</script>
+{% endblock %}

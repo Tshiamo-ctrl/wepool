@@ -1,0 +1,68 @@
+<!-- dashboard/templates/dashboard/sponsored_queue.html -->
+{% extends 'base.html' %}
+
+{% block title %}Sponsored Queue - WePool Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Sponsored Members Queue</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p>Sponsored members with pending status:</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Referrer</th>
+                            <th>Paying Referrals</th>
+                            <th>Qualification Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in profiles %}
+                        <tr>
+                            <td>{{ profile.user.get_full_name }}</td>
+                            <td>{{ profile.user.email }}</td>
+                            <td>{{ profile.phone }}</td>
+                            <td>{{ profile.referrer_phone|default:"-" }}</td>
+                            <td>
+                                {% load core_tags %}
+                                {% get_referral_stats profile as stats %}
+                                {{ stats.paying_referrals }}/4
+                            </td>
+                            <td>
+                                {% if stats.paying_referrals >= 4 %}
+                                    <span class="badge bg-success">Qualified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ 4|add:"-"|add:stats.paying_referrals }} more needed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ profile.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'edit_user' profile.id %}" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No pending sponsored members</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
